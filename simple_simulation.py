@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+from argparse import ArgumentParser
 
 def create_graph(edges, initial_mutants):
     G = nx.Graph()
@@ -13,7 +14,7 @@ def create_graph(edges, initial_mutants):
 
     return G
 
-def moran_broadcast_step(G, mutant_fitness):
+def moran_broadcast_step(G, mutant_fitness)->nx.Graph:
     weights = [mutant_fitness if G.nodes[node]['state'] == 'mutant' else 1 for node in G.nodes()]
     chosen_node = random.choices(list(G.nodes()), weights=weights, k=1)[0]
     neighbors = list(G.neighbors(chosen_node))
@@ -51,25 +52,68 @@ def simulation_from_mutants(G, mutant_fitness, num_simulations):
         steps_total += steps
         if result == "mutation fixation":
             fixations_total += 1
-    print(f"Fixation probability: {fixations_total / num_simulations:.4f}")
-    print(f"Average steps to fixation/extinction: {steps_total / num_simulations:.2f}")   
+    return fixations_total / num_simulations, steps_total / num_simulations
 
 
-def main():
-    input_edges = "edges.txt"  
-    input_mutants = "mutants.txt"
+def main(input_edges, input_mutants, mutant_fitness, num_simulations):
     with open(input_edges, 'r') as f:
         edges = f.read().splitlines()
     with open(input_mutants, 'r') as f:
         initial_mutants = list(map(int, f.read().splitlines()))
     G = create_graph(edges, initial_mutants)
 
-    simulation_from_mutants(G.copy(), mutant_fitness=1.0, num_simulations=5000)
+    fixationProbability, stepsTotal = simulation_from_mutants(G.copy(), mutant_fitness=mutant_fitness, num_simulations=num_simulations)
+    print(f"Fixation probability: {fixationProbability}")
+    print(f"Average number of steps: {stepsTotal}")
+
     
     nx.draw(G, with_labels=True)
     plt.show()
 
 
 
-if __name__ == "__main__":    main()    
+if __name__ == "__main__":   
+
+    parser = ArgumentParser(description="Simulate the spread of a mutation in a graph (broadcast).")
+
+    parser.add_argument(
+        "-e",
+        "--edges",
+        default="inputs/edges.in",
+        type=str,
+        help=(
+            "The file with list of edges."
+        ),
+    )
+    parser.add_argument(
+        "-m",
+        "--mutants",
+        default="inputs/mutants.in",
+        type=str,
+        help=(
+            "The fiel with list of initial mutants."
+        ),
+    )
+    parser.add_argument(
+        "-r",
+        "--mutant_fitness",
+        default=1,
+        type=float,
+        help=(
+            "The fitness of the mutant."
+        ),
+    )
+    parser.add_argument(
+        "-s",
+        "--simulations",
+        default=10000,
+        type=int,
+        help=(
+            "The number of simulations to run."
+        ),
+    )
+    input_args = parser.parse_args()
+
+    main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations)
+
 
