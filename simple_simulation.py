@@ -2,6 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 from argparse import ArgumentParser
+import known_formulas
 
 def create_graph(edges, initial_mutants):
     G = nx.Graph()
@@ -37,14 +38,15 @@ def simulate_spread(G, mutant_fitness):
         G = moran_broadcast_step(G, mutant_fitness)
         num_of_steps += 1
     if G.graph['numOfMutants'] == G.number_of_nodes():
-        print(f"All nodes became mutants in {num_of_steps} steps.")
+        #print(f"All nodes became mutants in {num_of_steps} steps.")
         return "mutation fixation", num_of_steps
     else:   
-        print(f"All nodes became residents in {num_of_steps} steps.")
+        #print(f"All nodes became residents in {num_of_steps} steps.")
         return "mutation extinction", num_of_steps
 
 def simulation_from_mutants(G, mutant_fitness, num_simulations):  
     steps_total = 0
+    steps_to_fixation = 0
     fixations_total = 0
     for i in range(num_simulations):
         G_copy = G.copy()
@@ -52,7 +54,8 @@ def simulation_from_mutants(G, mutant_fitness, num_simulations):
         steps_total += steps
         if result == "mutation fixation":
             fixations_total += 1
-    return fixations_total / num_simulations, steps_total / num_simulations
+            steps_to_fixation += steps
+    return fixations_total / num_simulations, steps_total / num_simulations, steps_to_fixation / fixations_total if fixations_total > 0 else 0
 
 
 def main(input_edges, input_mutants, mutant_fitness, num_simulations):
@@ -62,9 +65,12 @@ def main(input_edges, input_mutants, mutant_fitness, num_simulations):
         initial_mutants = list(map(int, f.read().splitlines()))
     G = create_graph(edges, initial_mutants)
 
-    fixationProbability, stepsTotal = simulation_from_mutants(G.copy(), mutant_fitness=mutant_fitness, num_simulations=num_simulations)
+    fixationProbability, stepsTotal, stepsToFixation = simulation_from_mutants(G.copy(), mutant_fitness=mutant_fitness, num_simulations=num_simulations)
     print(f"Fixation probability: {fixationProbability}")
     print(f"Average number of steps: {stepsTotal}")
+    print(f"Average fixation time: {stepsToFixation}")
+
+    print("Theoretical fixation probability:", known_formulas.fix_prob_cycle(G.number_of_nodes(), mutant_fitness))      
 
     
     nx.draw(G, with_labels=True)
@@ -91,7 +97,7 @@ if __name__ == "__main__":
         default="inputs/mutants.in",
         type=str,
         help=(
-            "The fiel with list of initial mutants."
+            "The file with list of initial mutants."
         ),
     )
     parser.add_argument(
@@ -115,5 +121,6 @@ if __name__ == "__main__":
     input_args = parser.parse_args()
 
     main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations)
+
 
 

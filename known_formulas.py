@@ -10,9 +10,7 @@ def fix_prob_star_from_leaf(N, mutant_fitness):
 def fix_prob_cycle(N, mutant_fitness):
     r = mutant_fitness
 
-    middle = 0
-    for i in range(N - 5):
-        middle += r**(-i) 
-    end = r**(-(N-6)) * r+1 / (2 * r**3)
+    if r == 1:
+        return 1/N
 
-    return 1 / (1 + 2/r + 2/(r**2 * (r+1)) * (middle + end))
+    return 1 / ( 1 + 2/r + (2/(r**2 * (r+1))) * ( (r-r**(7-N))/(r-1) + r**(5-N) * (r+1) + r**(4-N) * (r+1) / 2 )  )
