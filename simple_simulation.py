@@ -66,15 +66,16 @@ def main(input_edges, input_mutants, mutant_fitness, num_simulations):
     G = create_graph(edges, initial_mutants)
 
     fixationProbability, stepsTotal, stepsToFixation = simulation_from_mutants(G.copy(), mutant_fitness=mutant_fitness, num_simulations=num_simulations)
+    
     print(f"Fixation probability: {fixationProbability}")
     print(f"Average number of steps: {stepsTotal}")
     print(f"Average fixation time: {stepsToFixation}")
 
-    print("Theoretical fixation probability:", known_formulas.fix_prob_cycle(G.number_of_nodes(), mutant_fitness))      
+    #print("Theoretical fixation probability:", known_formulas.fix_prob_cycle(G.number_of_nodes(), mutant_fitness))      
 
     
-    nx.draw(G, with_labels=True)
-    plt.show()
+    #nx.draw(G, with_labels=True)
+    #plt.show()
 
 
 
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-e",
         "--edges",
-        default="inputs/edges.in",
+        default="examples/edges.in",
         type=str,
         help=(
             "The file with list of edges."
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         "--mutants",
-        default="inputs/mutants.in",
+        default="examples/mutants.in",
         type=str,
         help=(
             "The file with list of initial mutants."
