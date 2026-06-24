@@ -45,6 +45,9 @@ def simulate_spread(G, mutant_fitness):
         return "mutation extinction", num_of_steps
 
 def simulation_from_mutants(G, mutant_fitness, num_simulations):  
+    nx.draw(G, with_labels=True)
+    plt.show()
+    
     steps_total = 0
     steps_to_fixation = 0
     fixations_total = 0
@@ -74,8 +77,7 @@ def main(input_edges, input_mutants, mutant_fitness, num_simulations):
     #print("Theoretical fixation probability:", known_formulas.fix_prob_cycle(G.number_of_nodes(), mutant_fitness))      
 
     
-    #nx.draw(G, with_labels=True)
-    #plt.show()
+  
 
 
 

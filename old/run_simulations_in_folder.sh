@@ -16,7 +16,9 @@ for edges_path in ${dir}edges*.in; do
     
     # 4. Run the simulation
     # Using "$edges_path" directly since it already includes the directory
-    python3 simple_simulation.py --edges="$edges_path" --mutants="$mutants" -s=1000 -r=1 >> "$out"
+    python3 simple_simulation.py --edges="$edges_path" --mutants="$mutants" -s=1000 -r=2 >> "$out"
     
     echo "Done with index: $num"
 done
+
+# CSV - graph type, size, mutant?, total num of vertices?, number of simulations, fixation probility, absorbtion time, fixation time
