@@ -56,5 +56,5 @@ def generate_path_with_n_leaves(size, n, mutants):
     return G
 
 
-generate_path_with_n_leaves(6, 1, [1])
+#generate_path_with_n_leaves(6, 1, [1])
        
