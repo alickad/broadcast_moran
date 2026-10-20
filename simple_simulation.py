@@ -3,6 +3,30 @@ import matplotlib.pyplot as plt
 import random
 from argparse import ArgumentParser
 import known_formulas
+from pyvis.network import Network
+from time import sleep
+
+def init_visualization(G):
+    net = Network(notebook=True)
+    for node in G.nodes():
+        color = 'red' if G.nodes[node]['state'] == 'mutant' else 'blue'
+        net.add_node(node, color=color)
+    for edge in G.edges():
+        net.add_edge(edge[0], edge[1])
+    net.barnes_hut()
+    net.show("graph.html")
+    return net
+
+def update_visualization(G, net, visualize):
+    if not visualize:
+        return
+    # Update the visualization of the graph
+    sleep(0.5)  # Pause for a moment to visualize the change
+    for node in G.nodes():
+        color = 'red' if G.nodes[node]['state'] == 'mutant' else 'blue'
+        net.get_node(node)['color'] = color
+    net.show("graph.html")  # Show the updated graph in a new HTML file
+    
 
 def create_graph(edges, initial_mutants):
     G = nx.Graph()
@@ -44,9 +68,13 @@ def simulate_spread(G, mutant_fitness):
         #print(f"All nodes became residents in {num_of_steps} steps.")
         return "mutation extinction", num_of_steps
 
-def simulation_from_mutants(G, mutant_fitness, num_simulations):  
-    nx.draw(G, with_labels=True)
-    plt.show()
+def simulation_from_mutants(G, mutant_fitness, num_simulations, visualize=False):  
+    #nx.draw(G, with_labels=True)
+    #plt.show()
+    net = None
+    if visualize:
+        net = init_visualization(G)
+    
     
     steps_total = 0
     steps_to_fixation = 0
@@ -58,10 +86,12 @@ def simulation_from_mutants(G, mutant_fitness, num_simulations):
         if result == "mutation fixation":
             fixations_total += 1
             steps_to_fixation += steps
+        update_visualization(G, net, visualize)
+        
     return fixations_total / num_simulations, steps_total / num_simulations, steps_to_fixation / fixations_total if fixations_total > 0 else 0
 
 
-def main(input_edges, input_mutants, mutant_fitness, num_simulations):
+def main(input_edges, input_mutants, mutant_fitness, num_simulations, visualize=False):
     with open(input_edges, 'r') as f:
         edges = f.read().splitlines()
     with open(input_mutants, 'r') as f:
@@ -121,9 +151,17 @@ if __name__ == "__main__":
             "The number of simulations to run."
         ),
     )
+    parser.add_argument(
+        "-v",
+        "--visualize",
+        action="store_true",
+        help=(
+            "Visualize the graph and the spread of the mutation in one run of simulation."
+        ),
+    )
     input_args = parser.parse_args()
 
-    main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations)
+    main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations, visualize=input_args.visualize)
 
 
 

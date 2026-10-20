@@ -131,7 +131,7 @@ def main(graph, mutant_fitness=1.0):
     
 
 if __name__ == "__main__":
-    G = gg.generate_cycle(10, [0])
+    G = gg.generate_cycle(12, [0, 5, 8])
     fixation_probability, steps_to_fixation, steps_total = main(G, mutant_fitness=1.0)
     print(f"Fixation probability: {fixation_probability}")
     print(f"Expected steps to fixation: {steps_to_fixation}")
