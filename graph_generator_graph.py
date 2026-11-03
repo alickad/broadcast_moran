@@ -10,8 +10,8 @@ def generate_path(size, mutants):
         path.nodes[mutant]['state'] = 'mutant'
     path.graph['numOfMutants'] = len(mutants)
 
-    nx.draw(path, with_labels=True)
-    plt.show()
+    #nx.draw(path, with_labels=True)
+    #plt.show()
     return path
 
 # nodes are numbered "clockwise"
@@ -23,8 +23,8 @@ def generate_cycle(size, mutants):
         cycle.nodes[mutant]['state'] = 'mutant'
     cycle.graph['numOfMutants'] = len(mutants)
 
-    nx.draw(cycle, with_labels=True)
-    plt.show()
+    #nx.draw(cycle, with_labels=True)
+    #plt.show()
     return cycle
 
 
@@ -51,8 +51,8 @@ def generate_path_with_n_leaves(size, n, mutants):
         G.nodes[mutant]['state'] = 'mutant'
     G.graph['numOfMutants'] = len(mutants)
     
-    nx.draw(G, with_labels=True)
-    plt.show()
+    #nx.draw(G, with_labels=True)
+    #plt.show()
     return G
 
 

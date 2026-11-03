@@ -1,8 +1,22 @@
+from argparse import ArgumentParser
+
 import networkx as nx
 import graph_generator_graph as gg
 import numpy as np
 from scipy.sparse import csr_matrix, eye
 from scipy.sparse.linalg import spsolve
+import time
+
+def create_graph(edges, initial_mutants):
+    G = nx.Graph()
+    G = nx.read_edgelist(edges, nodetype=int)
+    for node in G.nodes():
+        G.nodes[node]['state'] = 'resident'
+    for mutant in initial_mutants:
+        G.nodes[mutant]['state'] = 'mutant'  
+    G.graph['numOfMutants'] = len(initial_mutants)
+
+    return G
 
 def find_starting_state(graph):
     mutants = [node for node, data in graph.nodes(data=True) if data['state'] == 'mutant']
@@ -27,7 +41,7 @@ def find_reachable_states(graph):
             if (curr & (1 << node)) > 0:  # node is mutant
                 for neighbor in graph.neighbors(node):
                     if (curr & (1 << neighbor)) == 0:  # neighbor is resident
-                        new_state = curr | (1 << neighbor)  # make neighbor mutant
+                        new_state = new_state | (1 << neighbor)  # make neighbor mutant
                 if new_state not in visited:
                     visited.add(new_state)
                     stack.append(new_state)
@@ -131,8 +145,68 @@ def main(graph, mutant_fitness=1.0):
     
 
 if __name__ == "__main__":
-    G = gg.generate_cycle(12, [0, 5, 8])
+
+    parser = ArgumentParser(description="Simulate the spread of a mutation in a graph (broadcast).")
+    
+    parser.add_argument(
+        "-e",
+        "--edges",
+        default="examples/edges.in",
+        type=str,
+        help=(
+            "The file with list of edges."
+        ),
+    )
+    parser.add_argument(
+        "-m",
+        "--mutants",
+        default="examples/mutants.in",
+        type=str,
+        help=(
+            "The file with list of initial mutants."
+        ),
+    )
+    parser.add_argument(
+        "-r",
+        "--mutant_fitness",
+        default=1,
+        type=float,
+        help=(
+            "The fitness of the mutant."
+        ),
+    )
+    parser.add_argument(
+        "-n",
+        "--num_simulations",
+        default=1000,
+        type=int,
+        help=(
+            "The number of simulations to run."
+        ),
+    )
+    parser.add_argument(
+        "-v",
+        "--visualize",
+        action="store_true",
+        help=(
+            "Whether to visualize the graph."
+        ),
+    )
+    start_time = time.perf_counter()
+    input_args = parser.parse_args()
+
+    mutant_fitness = input_args.mutant_fitness
+    input_edges = input_args.edges
+    input_mutants = input_args.mutants
+    with open(input_edges, 'r') as f:
+        edges = f.read().splitlines()
+    with open(input_mutants, 'r') as f:
+        initial_mutants = list(map(int, f.read().splitlines()))
+    G = create_graph(edges, initial_mutants)
+
     fixation_probability, steps_to_fixation, steps_total = main(G, mutant_fitness=1.0)
     print(f"Fixation probability: {fixation_probability}")
     print(f"Expected steps to fixation: {steps_to_fixation}")
     print(f"Expected total steps: {steps_total}")
+    end_time = time.perf_counter()
+    print(f"Execution time: {end_time - start_time} seconds")

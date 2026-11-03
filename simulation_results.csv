@@ -1,4 +1,4 @@
-"graph type","size","mutant fitness","number of simulations","fixation probability","absorbtion time","fixation time","mutants","total vertices"
+"graph type","size","mutant fitness","number of simulations","fixation probability","absorbtion time","conditional fixation time","mutants","total vertices"
 path,1,1.0,5000,1.0,0.0,0.0,[0],1
 path,2,1.0,5000,0.5028,1.0,1.0,[0],2
 path,3,1.0,5000,0.3476,2.9994,3.911392405063291,[0],3

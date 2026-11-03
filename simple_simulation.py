@@ -1,31 +1,40 @@
+import webbrowser
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
 from argparse import ArgumentParser
 import known_formulas
 from pyvis.network import Network
-from time import sleep
+import time
+
+import matplotlib.pyplot as plt
 
 def init_visualization(G):
-    net = Network(notebook=True)
-    for node in G.nodes():
-        color = 'red' if G.nodes[node]['state'] == 'mutant' else 'blue'
-        net.add_node(node, color=color)
-    for edge in G.edges():
-        net.add_edge(edge[0], edge[1])
-    net.barnes_hut()
-    net.show("graph.html")
-    return net
+    plt.ion()  # Turn on interactive mode
+    fig, ax = plt.subplots(figsize=(7, 7))
+    pos = nx.spring_layout(G, seed=42)
+    return {"fig": fig, "ax": ax, "pos": pos}
 
-def update_visualization(G, net, visualize):
-    if not visualize:
+def update_visualization(G, net_dict, visualize, chosen_node=None):
+    if not visualize or net_dict is None:
         return
-    # Update the visualization of the graph
-    sleep(0.5)  # Pause for a moment to visualize the change
-    for node in G.nodes():
-        color = 'red' if G.nodes[node]['state'] == 'mutant' else 'blue'
-        net.get_node(node)['color'] = color
-    net.show("graph.html")  # Show the updated graph in a new HTML file
+    ax = net_dict["ax"]
+    pos = net_dict["pos"]
+    
+    ax.clear()
+    colors = ["red" if G.nodes[node]["state"] == "mutant" else "blue" for node in G.nodes()]
+    node_sizes = [700 if node == chosen_node else 300 for node in G.nodes()]
+    
+    nx.draw_networkx_nodes(G, pos, node_color=colors, node_size=node_sizes, ax=ax)
+    nx.draw_networkx_edges(G, pos, alpha=0.5, ax=ax)
+    nx.draw_networkx_labels(G, pos, ax=ax)
+    
+    ax.set_title(f"Mutants: {G.graph['numOfMutants']} / {G.number_of_nodes()}")
+    ax.axis("off")
+    
+    plt.draw()
+    plt.pause(0.5)  # Pause to render frame live
     
 
 def create_graph(edges, initial_mutants):
@@ -42,6 +51,7 @@ def create_graph(edges, initial_mutants):
 def moran_broadcast_step(G, mutant_fitness)->nx.Graph:
     weights = [mutant_fitness if G.nodes[node]['state'] == 'mutant' else 1 for node in G.nodes()]
     chosen_node = random.choices(list(G.nodes()), weights=weights, k=1)[0]
+    update_visualization(G, None, False, chosen_node)  # Update visualization with the chosen node highlighted
     neighbors = list(G.neighbors(chosen_node))
     if G.nodes[chosen_node]['state'] == 'mutant':
         for neighbor in neighbors:
@@ -54,13 +64,17 @@ def moran_broadcast_step(G, mutant_fitness)->nx.Graph:
                 G.nodes[neighbor]['state'] = 'resident'
                 G.graph['numOfMutants'] -= 1
 
-    return G
+    return G, chosen_node
 
-def simulate_spread(G, mutant_fitness):
+def simulate_spread(G, mutant_fitness, visualize=False, net=None):
     num_of_steps = 0
     while 0 < G.graph['numOfMutants'] < G.number_of_nodes():
-        G = moran_broadcast_step(G, mutant_fitness)
+        G, chosen_node = moran_broadcast_step(G, mutant_fitness)
         num_of_steps += 1
+        if visualize and net:
+                update_visualization(G, net, visualize, chosen_node)
+                sleep(0.3)
+
     if G.graph['numOfMutants'] == G.number_of_nodes():
         #print(f"All nodes became mutants in {num_of_steps} steps.")
         return "mutation fixation", num_of_steps
@@ -74,6 +88,7 @@ def simulation_from_mutants(G, mutant_fitness, num_simulations, visualize=False)
     net = None
     if visualize:
         net = init_visualization(G)
+        update_visualization(G, net, visualize)
     
     
     steps_total = 0
@@ -81,12 +96,12 @@ def simulation_from_mutants(G, mutant_fitness, num_simulations, visualize=False)
     fixations_total = 0
     for i in range(num_simulations):
         G_copy = G.copy()
-        result, steps = simulate_spread(G_copy, mutant_fitness)
+        result, steps = simulate_spread(G_copy, mutant_fitness, visualize, net)
         steps_total += steps
         if result == "mutation fixation":
             fixations_total += 1
             steps_to_fixation += steps
-        update_visualization(G, net, visualize)
+        #update_visualization(G_copy, net, visualize)
         
     return fixations_total / num_simulations, steps_total / num_simulations, steps_to_fixation / fixations_total if fixations_total > 0 else 0
 
@@ -98,11 +113,16 @@ def main(input_edges, input_mutants, mutant_fitness, num_simulations, visualize=
         initial_mutants = list(map(int, f.read().splitlines()))
     G = create_graph(edges, initial_mutants)
 
-    fixationProbability, stepsTotal, stepsToFixation = simulation_from_mutants(G.copy(), mutant_fitness=mutant_fitness, num_simulations=num_simulations)
+    fixationProbability, stepsTotal, stepsToFixation = simulation_from_mutants(
+        G.copy(), 
+        mutant_fitness=mutant_fitness, 
+        num_simulations=num_simulations, 
+        visualize=visualize
+        )
     
     print(f"Fixation probability: {fixationProbability}")
-    print(f"Average number of steps: {stepsTotal}")
-    print(f"Average fixation time: {stepsToFixation}")
+    print(f"Absorption time: {stepsTotal}")
+    print(f"Conditional fixation time: {stepsToFixation}")
 
     #print("Theoretical fixation probability:", known_formulas.fix_prob_cycle(G.number_of_nodes(), mutant_fitness))      
 
@@ -145,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s",
         "--simulations",
-        default=10000,
+        default=1,
         type=int,
         help=(
             "The number of simulations to run."
@@ -159,9 +179,11 @@ if __name__ == "__main__":
             "Visualize the graph and the spread of the mutation in one run of simulation."
         ),
     )
+    start_time = time.perf_counter()
     input_args = parser.parse_args()
 
     main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations, visualize=input_args.visualize)
+    print(f"Execution time: {time.perf_counter() - start_time} seconds")
 
 
 
