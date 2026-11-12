@@ -56,6 +56,15 @@ class NumericalSolverTests(unittest.TestCase):
         self.assertAlmostEqual(neutral, 1 / 3)
         self.assertGreater(advantageous, neutral)
 
+    def test_subneutral_mutants_have_lower_fixation_probability(self):
+        graph = make_graph(nx.path_graph(3), [0])
+
+        neutral = numerical_solver.main(graph, 1.0)[0]
+        subneutral = numerical_solver.main(graph, 0.5)[0]
+
+        self.assertAlmostEqual(subneutral, 1 / 7)
+        self.assertLess(subneutral, neutral)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,3 +1,4 @@
+import math
 import random
 import unittest
 
@@ -16,6 +17,13 @@ def make_graph(graph, mutants):
     return graph
 
 
+def assert_close_to_expected(test_case, actual, expected):
+    test_case.assertTrue(
+        math.isclose(actual, expected, rel_tol=0.02, abs_tol=0.01),
+        f"actual={actual}, expected={expected}",
+    )
+
+
 class SimulationTests(unittest.TestCase):
     def test_simulation_matches_exact_solver_on_small_path(self):
         graph = make_graph(nx.path_graph(3), [0])
@@ -28,9 +36,9 @@ class SimulationTests(unittest.TestCase):
             num_simulations=5000,
         )
 
-        self.assertAlmostEqual(actual[0], expected[0], delta=0.03)
-        self.assertAlmostEqual(actual[1], expected[2], delta=0.25)
-        self.assertAlmostEqual(actual[2], expected[1], delta=0.35)
+        assert_close_to_expected(self, actual[0], expected[0])
+        assert_close_to_expected(self, actual[1], expected[2])
+        assert_close_to_expected(self, actual[2], expected[1])
 
     def test_simulation_reflects_advantageous_mutants(self):
         graph = make_graph(nx.path_graph(3), [0])
@@ -45,7 +53,22 @@ class SimulationTests(unittest.TestCase):
         )[0]
 
         self.assertGreater(expected, neutral)
-        self.assertAlmostEqual(actual, expected, delta=0.03)
+        assert_close_to_expected(self, actual, expected)
+
+    def test_simulation_matches_exact_solver_for_subneutral_mutants(self):
+        graph = make_graph(nx.path_graph(3), [0])
+        expected = numerical_solver.main(graph, mutant_fitness=0.5)
+
+        random.seed(24680)
+        actual = simple_simulation.simulation_from_mutants(
+            graph,
+            mutant_fitness=0.5,
+            num_simulations=10000,
+        )
+
+        assert_close_to_expected(self, actual[0], expected[0])
+        assert_close_to_expected(self, actual[1], expected[2])
+        assert_close_to_expected(self, actual[2], expected[1])
 
 
 if __name__ == "__main__":
