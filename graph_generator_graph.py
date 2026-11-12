@@ -1,5 +1,4 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 
 # nodes are nubered from left to right
 def generate_path(size, mutants):

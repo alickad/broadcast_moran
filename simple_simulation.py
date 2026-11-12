@@ -1,14 +1,9 @@
-import webbrowser
-
+from time import sleep
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
 from argparse import ArgumentParser
-import known_formulas
-from pyvis.network import Network
 import time
-
-import matplotlib.pyplot as plt
 
 def init_visualization(G):
     plt.ion()  # Turn on interactive mode
@@ -193,6 +188,5 @@ if __name__ == "__main__":
 
     main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations, visualize=input_args.visualize)
     print(f"Execution time: {time.perf_counter() - start_time} seconds")
-
 
 
