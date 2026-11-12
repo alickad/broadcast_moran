@@ -35,7 +35,16 @@ def update_visualization(G, net_dict, visualize, chosen_node=None):
     
     plt.draw()
     plt.pause(0.5)  # Pause to render frame live
-    
+
+def normalize_vertex_numbers(edges):
+    unique_vertices = sorted(set(int(v) for edge in edges for v in edge.split()))
+    vertex_mapping = {old: new for new, old in enumerate(unique_vertices)}
+
+    normalized_edges = []
+    for edge in edges:
+        v1, v2 = map(int, edge.split())
+        normalized_edges.append(f"{vertex_mapping[v1]} {vertex_mapping[v2]}")
+    return normalized_edges
 
 def create_graph(edges, initial_mutants):
     G = nx.Graph()

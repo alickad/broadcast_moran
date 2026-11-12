@@ -7,8 +7,19 @@ from scipy.sparse import csr_matrix, eye
 from scipy.sparse.linalg import spsolve
 import time
 
+def normalize_vertex_numbers(edges):
+    unique_vertices = sorted(set(int(v) for edge in edges for v in edge.split()))
+    vertex_mapping = {old: new for new, old in enumerate(unique_vertices)}
+
+    normalized_edges = []
+    for edge in edges:
+        v1, v2 = map(int, edge.split())
+        normalized_edges.append(f"{vertex_mapping[v1]} {vertex_mapping[v2]}")
+    return normalized_edges
+
 def create_graph(edges, initial_mutants):
     G = nx.Graph()
+    edges = normalize_vertex_numbers(edges)
     G = nx.read_edgelist(edges, nodetype=int)
     for node in G.nodes():
         G.nodes[node]['state'] = 'resident'
@@ -68,16 +79,17 @@ def calculate_transitions(graph, reachable_states, mutant_fitness=1.0):
                     new_state &= ~(1 << neighbor)  # make neighbor resident
                 transitions.append((state_index[state], state_index[new_state], 1))
     return transitions
-######## MAYBE APPEND new_state and state in oposite order?
-
-
-#print(find_reachable_states(gg.generate_cycle(6, [0])))  # Example usage
 
 def main(graph, mutant_fitness=1.0):
     ALL_MUTANTS = (1 << graph.number_of_nodes()) - 1
     ALL_RESIDENTS = 0
     NUM_NODES = graph.number_of_nodes()
     STARTING_STATE = find_starting_state(graph)
+
+    if STARTING_STATE == ALL_MUTANTS:
+        return 1.0, 0.0, 0.0
+    if STARTING_STATE == ALL_RESIDENTS:
+        return 0.0, 0.0, 0.0
 
     reachable_states = sorted(list(find_reachable_states(graph)))
     tmp = reachable_states[1]  # second to last state
@@ -97,8 +109,13 @@ def main(graph, mutant_fitness=1.0):
             transitions[-1] = (transitions[-1][0], transitions[-1][1], transitions[-1][2] + raw_transitions[i][2])
         else:
             transitions.append(raw_transitions[i])
-    for i in range(len(transitions)):
-        transitions[i] = (transitions[i][0], transitions[i][1], transitions[i][2] / NUM_NODES)  # normalize by number of nodes
+    for i, (row, col, weight) in enumerate(transitions):
+        state = reachable_states[row]
+        mutant_count = state.bit_count()
+        total_selection_weight = (
+            mutant_count * mutant_fitness + NUM_NODES - mutant_count
+        )
+        transitions[i] = (row, col, weight / total_selection_weight)
 
     rows_q = []
     cols_q = []
@@ -204,9 +221,11 @@ if __name__ == "__main__":
         initial_mutants = list(map(int, f.read().splitlines()))
     G = create_graph(edges, initial_mutants)
 
-    fixation_probability, steps_to_fixation, steps_total = main(G, mutant_fitness=1.0)
+    fixation_probability, steps_to_fixation, steps_total = main(
+        G, mutant_fitness=mutant_fitness
+    )
     print(f"Fixation probability: {fixation_probability}")
-    print(f"Expected steps to fixation: {steps_to_fixation}")
-    print(f"Expected total steps: {steps_total}")
+    print(f"Conditional fixation time: {steps_to_fixation}")
+    print(f"Absorption time: {steps_total}")
     end_time = time.perf_counter()
     print(f"Execution time: {end_time - start_time} seconds")
