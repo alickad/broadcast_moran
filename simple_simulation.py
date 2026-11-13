@@ -1,35 +1,10 @@
 from time import sleep
 import networkx as nx
-import matplotlib.pyplot as plt
 import random
 from argparse import ArgumentParser
 import time
 
-def init_visualization(G):
-    plt.ion()  # Turn on interactive mode
-    fig, ax = plt.subplots(figsize=(7, 7))
-    pos = nx.spring_layout(G, seed=42)
-    return {"fig": fig, "ax": ax, "pos": pos}
-
-def update_visualization(G, net_dict, visualize, chosen_node=None):
-    if not visualize or net_dict is None:
-        return
-    ax = net_dict["ax"]
-    pos = net_dict["pos"]
-    
-    ax.clear()
-    colors = ["red" if G.nodes[node]["state"] == "mutant" else "blue" for node in G.nodes()]
-    node_sizes = [700 if node == chosen_node else 300 for node in G.nodes()]
-    
-    nx.draw_networkx_nodes(G, pos, node_color=colors, node_size=node_sizes, ax=ax)
-    nx.draw_networkx_edges(G, pos, alpha=0.5, ax=ax)
-    nx.draw_networkx_labels(G, pos, ax=ax)
-    
-    ax.set_title(f"Mutants: {G.graph['numOfMutants']} / {G.number_of_nodes()}")
-    ax.axis("off")
-    
-    plt.draw()
-    plt.pause(0.5)  # Pause to render frame live
+from visualization import init_visualization, update_visualization
 
 def normalize_vertex_numbers(edges):
     unique_vertices = sorted(set(int(v) for edge in edges for v in edge.split()))
@@ -55,7 +30,6 @@ def create_graph(edges, initial_mutants):
 def moran_broadcast_step(G, mutant_fitness)->nx.Graph:
     weights = [mutant_fitness if G.nodes[node]['state'] == 'mutant' else 1 for node in G.nodes()]
     chosen_node = random.choices(list(G.nodes()), weights=weights, k=1)[0]
-    update_visualization(G, None, False, chosen_node)  # Update visualization with the chosen node highlighted
     neighbors = list(G.neighbors(chosen_node))
     if G.nodes[chosen_node]['state'] == 'mutant':
         for neighbor in neighbors:
@@ -188,5 +162,4 @@ if __name__ == "__main__":
 
     main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations, visualize=input_args.visualize)
     print(f"Execution time: {time.perf_counter() - start_time} seconds")
-
 
