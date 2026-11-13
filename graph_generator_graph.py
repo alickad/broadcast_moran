@@ -1,13 +1,11 @@
 import networkx as nx
 
+from graph_utils import initialize_graph
+
 # nodes are nubered from left to right
 def generate_path(size, mutants):
     path = nx.path_graph(size)
-    for node in path.nodes():
-        path.nodes[node]['state'] = 'resident'
-    for mutant in mutants:
-        path.nodes[mutant]['state'] = 'mutant'
-    path.graph['numOfMutants'] = len(mutants)
+    initialize_graph(path, mutants)
 
     #nx.draw(path, with_labels=True)
     #plt.show()
@@ -16,11 +14,7 @@ def generate_path(size, mutants):
 # nodes are numbered "clockwise"
 def generate_cycle(size, mutants):
     cycle = nx.cycle_graph(size)
-    for node in cycle.nodes():
-        cycle.nodes[node]['state'] = 'resident'
-    for mutant in mutants:
-        cycle.nodes[mutant]['state'] = 'mutant'
-    cycle.graph['numOfMutants'] = len(mutants)
+    initialize_graph(cycle, mutants)
 
     #nx.draw(cycle, with_labels=True)
     #plt.show()
@@ -44,11 +38,7 @@ def generate_path_with_n_leaves(size, n, mutants):
             G.add_edge(p*n, p*n + l)
         G.add_edge(p*n -n, p*n)
 
-    for node in G.nodes():
-        G.nodes[node]['state'] = 'resident'
-    for mutant in mutants:
-        G.nodes[mutant]['state'] = 'mutant'
-    G.graph['numOfMutants'] = len(mutants)
+    initialize_graph(G, mutants)
     
     #nx.draw(G, with_labels=True)
     #plt.show()

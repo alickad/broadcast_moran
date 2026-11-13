@@ -6,27 +6,7 @@ from scipy.sparse import csr_matrix, eye
 from scipy.sparse.linalg import spsolve
 import time
 
-def normalize_vertex_numbers(edges):
-    unique_vertices = sorted(set(int(v) for edge in edges for v in edge.split()))
-    vertex_mapping = {old: new for new, old in enumerate(unique_vertices)}
-
-    normalized_edges = []
-    for edge in edges:
-        v1, v2 = map(int, edge.split())
-        normalized_edges.append(f"{vertex_mapping[v1]} {vertex_mapping[v2]}")
-    return normalized_edges
-
-def create_graph(edges, initial_mutants):
-    G = nx.Graph()
-    edges = normalize_vertex_numbers(edges)
-    G = nx.read_edgelist(edges, nodetype=int)
-    for node in G.nodes():
-        G.nodes[node]['state'] = 'resident'
-    for mutant in initial_mutants:
-        G.nodes[mutant]['state'] = 'mutant'  
-    G.graph['numOfMutants'] = len(initial_mutants)
-
-    return G
+from graph_utils import create_graph, normalize_vertex_numbers
 
 def find_starting_state(graph):
     mutants = [node for node, data in graph.nodes(data=True) if data['state'] == 'mutant']
@@ -218,7 +198,7 @@ if __name__ == "__main__":
         edges = f.read().splitlines()
     with open(input_mutants, 'r') as f:
         initial_mutants = list(map(int, f.read().splitlines()))
-    G = create_graph(edges, initial_mutants)
+    G = create_graph(edges, initial_mutants, normalize=True)
 
     fixation_probability, steps_to_fixation, steps_total = main(
         G, mutant_fitness=mutant_fitness

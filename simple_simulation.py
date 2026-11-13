@@ -4,28 +4,8 @@ import random
 from argparse import ArgumentParser
 import time
 
+from graph_utils import create_graph, normalize_vertex_numbers
 from visualization import init_visualization, update_visualization
-
-def normalize_vertex_numbers(edges):
-    unique_vertices = sorted(set(int(v) for edge in edges for v in edge.split()))
-    vertex_mapping = {old: new for new, old in enumerate(unique_vertices)}
-
-    normalized_edges = []
-    for edge in edges:
-        v1, v2 = map(int, edge.split())
-        normalized_edges.append(f"{vertex_mapping[v1]} {vertex_mapping[v2]}")
-    return normalized_edges
-
-def create_graph(edges, initial_mutants):
-    G = nx.Graph()
-    G = nx.read_edgelist(edges, nodetype=int)
-    for node in G.nodes():
-        G.nodes[node]['state'] = 'resident'
-    for mutant in initial_mutants:
-        G.nodes[mutant]['state'] = 'mutant'  
-    G.graph['numOfMutants'] = len(initial_mutants)
-
-    return G
 
 def moran_broadcast_step(G, mutant_fitness)->nx.Graph:
     weights = [mutant_fitness if G.nodes[node]['state'] == 'mutant' else 1 for node in G.nodes()]
@@ -162,4 +142,3 @@ if __name__ == "__main__":
 
     main(input_edges=input_args.edges, input_mutants=input_args.mutants, mutant_fitness=input_args.mutant_fitness, num_simulations=input_args.simulations, visualize=input_args.visualize)
     print(f"Execution time: {time.perf_counter() - start_time} seconds")
-
