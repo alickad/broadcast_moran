@@ -1,6 +1,6 @@
 import argparse
-import simple_simulation as sim
-import graph_generator_graph as gen
+from moran import graph_generators as gen
+from moran import simulation as sim
 import os
 import csv
 

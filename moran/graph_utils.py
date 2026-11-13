@@ -32,3 +32,11 @@ def create_graph(edges, initial_mutants, normalize=False):
         edges = normalize_vertex_numbers(edges)
     graph = nx.read_edgelist(edges, nodetype=int)
     return initialize_graph(graph, initial_mutants)
+
+
+def load_graph(edge_file, mutant_file, normalize=False):
+    with open(edge_file) as file:
+        edges = file.read().splitlines()
+    with open(mutant_file) as file:
+        initial_mutants = [int(line) for line in file.read().splitlines()]
+    return create_graph(edges, initial_mutants, normalize=normalize)

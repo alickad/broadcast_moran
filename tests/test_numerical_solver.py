@@ -2,8 +2,8 @@ import unittest
 
 import networkx as nx
 
-import known_formulas
-import numerical_solver
+from moran import formulas as known_formulas
+from moran import exact_solver as numerical_solver
 
 
 def make_graph(graph, mutants):

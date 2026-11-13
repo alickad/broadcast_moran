@@ -4,8 +4,8 @@ import unittest
 
 import networkx as nx
 
-import numerical_solver
-import simple_simulation
+from moran import exact_solver as numerical_solver
+from moran import simulation as simple_simulation
 
 
 def make_graph(graph, mutants):

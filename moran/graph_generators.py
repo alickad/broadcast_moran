@@ -1,6 +1,6 @@
 import networkx as nx
 
-from graph_utils import initialize_graph
+from .graph_utils import initialize_graph
 
 # nodes are nubered from left to right
 def generate_path(size, mutants):
