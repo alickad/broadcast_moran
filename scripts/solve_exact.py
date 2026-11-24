@@ -1,4 +1,5 @@
 import argparse
+import math
 import time
 
 from moran.graph_utils import load_graph
@@ -9,10 +10,12 @@ def main():
     parser = argparse.ArgumentParser(
         description="Solve the broadcast Moran process exactly."
     )
-    parser.add_argument("-e", "--edges", default="examples/edges.in")
-    parser.add_argument("-m", "--mutants", default="examples/mutants.in")
+    parser.add_argument("-e", "--edges", required=True)
+    parser.add_argument("-m", "--mutants", required=True)
     parser.add_argument("-r", "--mutant_fitness", default=1, type=float)
     arguments = parser.parse_args()
+    if not math.isfinite(arguments.mutant_fitness) or arguments.mutant_fitness <= 0:
+        parser.error("Mutant fitness must be a positive finite number.")
 
     start_time = time.perf_counter()
     graph = load_graph(arguments.edges, arguments.mutants, normalize=True)
