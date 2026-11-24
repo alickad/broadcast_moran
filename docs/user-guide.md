@@ -10,8 +10,8 @@ when all vertices have the same type.
 
 The simulation estimates the results by repeating the process. The exact solver
 constructs the reachable state space and solves the corresponding transition
-system; it is intended for small graphs because the state space can grow
-exponentially.
+system; it is intended for graphs with a small state space. The state space can
+grow exponentially with the number of vertices.
 
 ## Input files
 
@@ -30,6 +30,9 @@ whitespace. The edge is undirected. IDs may be negative.
 The graph must be connected and non-empty. Every vertex must appear in at least
 one edge; isolated vertices cannot be represented by this format.
 Blank lines are not valid edge records.
+
+The exact solver internally remaps vertex IDs to `0, 1, 2, ...`. This does not
+change the IDs shown in the simulation visualization.
 
 ### Mutant file
 

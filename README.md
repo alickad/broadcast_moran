@@ -1,9 +1,9 @@
 # Broadcasting Moran process
 
-This project simulates the broadcast Moran process on an undirected graph and
-computes exact results for small graphs. It reports the probability that mutants
-take over, the expected time to absorption, and the expected fixation time
-conditional on fixation.
+This project simulates the Moran process with broadcasting on an undirected
+graph and computes exact results for small graphs. It reports the probability
+that mutants take over, the expected time to absorption, and the expected
+fixation time conditional on fixation.
 
 ## Quick start
 

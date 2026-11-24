@@ -66,5 +66,4 @@ possible.
 - The exact solver is suitable only for graphs whose reachable state space
   fits available memory and runtime.
 - The included test suite and CLI examples have been checked on Linux with
-  Python 3.14.8; other operating systems and Python versions still need
-  verification.
+  Python 3.14.8.
