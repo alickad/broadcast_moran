@@ -99,6 +99,47 @@ input IDs do not need to start at zero.
 The exact method can become impractical as graph size increases. Use the
 simulation for larger graphs.
 
+## Batch simulations and saving results
+
+Use `scripts.run_simulations` to run a series of simulations over a range of
+sizes. Results are appended to a CSV file and remain available after the
+program exits:
+
+```bash
+python -m scripts.run_simulations \
+  --graphType path \
+  --sizeFrom 3 \
+  --sizeTo 10 \
+  --mutantFitness 1 \
+  --numSimulations 1000 \
+  --output results/path_neutral.csv
+```
+
+The output defaults to `simulation_results.csv` in the repository root.
+Every run appends rows to the selected file; it does not overwrite existing
+results. A header is written if the file is new or empty. The output directory
+must already exist.
+
+Choose a different output filename for a separate experiment so its data is
+not mixed with existing results. To keep using the default file, make a backup
+before a new run:
+
+```bash
+# Linux or macOS
+cp simulation_results.csv simulation_results_backup.csv
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item simulation_results.csv simulation_results_backup.csv
+```
+
+Supported graph types are `path`, `cycle`, and `path_with_n_leaves`. The
+generator currently uses one leaf per path vertex for `path_with_n_leaves`.
+Each CSV row records the graph type and size, mutant fitness, number of
+simulations, estimated fixation probability, absorption and conditional
+fixation times, initial mutants, and total vertex count.
+
 ## Interpreting the results
 
 - **Fixation probability**: probability that mutants eventually occupy every

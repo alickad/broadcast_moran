@@ -1,12 +1,31 @@
 import argparse
+import csv
+from pathlib import Path
+
 from moran import graph_generators as gen
 from moran import simulation as sim
-import os
-import csv
 
-# CSV - graph type, size, mutant?, total num of vertices?, number of simulations, fixation probility, absorbtion time, fixation time
+RESULT_HEADERS = [
+    "graph type",
+    "size",
+    "mutant fitness",
+    "number of simulations",
+    "fixation probability",
+    "absorption time",
+    "conditional fixation time",
+    "mutants",
+    "total vertices",
+]
 
-def simulate(sizeFrom, sizeTo, mutantFitness, numSimulations, graphType):
+
+def simulate(
+    sizeFrom,
+    sizeTo,
+    mutantFitness,
+    numSimulations,
+    graphType,
+    output_file="simulation_results.csv",
+):
     for size in range(sizeFrom, sizeTo + 1):
         match graphType:
             case "path":
@@ -24,64 +43,107 @@ def simulate(sizeFrom, sizeTo, mutantFitness, numSimulations, graphType):
                 totalVertices = size + size * n
    
         fixationProbability, stepsTotal, stepsToFixation = sim.simulation_from_mutants(G.copy(), mutant_fitness=mutantFitness, num_simulations=numSimulations)
-        addToTable(graphType, size, mutantFitness, numSimulations, fixationProbability, stepsTotal, stepsToFixation, mutants, totalVertices)
+        addToTable(
+            graphType,
+            size,
+            mutantFitness,
+            numSimulations,
+            fixationProbability,
+            stepsTotal,
+            stepsToFixation,
+            mutants,
+            totalVertices,
+            output_file,
+        )
 
-    
-def addToTable(grapthType, size, mutantFitness, numSimulations, fixationProbability, absorptionTime, fixationTime, mutants, totalVertices):
-    filename = "simulation_results.csv"
-    headers = ["graph type", "size", "mutant fitness", "number of simulations", "fixation probability", "absorbtion time", "fixation time", "mutants", "total vertices"]
 
-    row = [grapthType, size, mutantFitness, numSimulations, fixationProbability, absorptionTime, fixationTime, mutants, totalVertices]
+def addToTable(
+    graphType,
+    size,
+    mutantFitness,
+    numSimulations,
+    fixationProbability,
+    absorptionTime,
+    fixationTime,
+    mutants,
+    totalVertices,
+    output_file="simulation_results.csv",
+):
+    output_path = Path(output_file)
+    write_header = not output_path.exists() or output_path.stat().st_size == 0
+    row = [
+        graphType,
+        size,
+        mutantFitness,
+        numSimulations,
+        fixationProbability,
+        absorptionTime,
+        fixationTime,
+        mutants,
+        totalVertices,
+    ]
 
-    file_exists = os.path.isfile(filename)
-    with open(filename, 'a', newline='') as table:
+    with output_path.open("a", newline="", encoding="utf-8") as table:
         writer = csv.writer(table)
+        if write_header:
+            writer.writerow(RESULT_HEADERS)
         writer.writerow(row)
 
+
 if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser(description="Run simulations for different graph types and sizes.")    
+    parser = argparse.ArgumentParser(
+        description="Run simulations for different graph types and sizes."
+    )
 
     parser.add_argument(
         "-g",
         "--graphType",
         type=str,
-        help=(
-            "The type of graph to simulate. Options: 'path', 'cycle', 'path_with_n_leaves'."
-        ),
+        choices=["path", "cycle", "path_with_n_leaves"],
+        required=True,
+        help="The type of graph to simulate.",
     )
     parser.add_argument(
         "-s",
         "--sizeFrom",
-        type=int,  
-        help=(
-            "The starting size of the graph."
-        ),
+        type=int,
+        required=True,
+        help="The starting size of the graph.",
     )
     parser.add_argument(
         "-t",
         "--sizeTo",
         type=int,
-        help=(
-            "The ending size of the graph."
-        ),
+        required=True,
+        help="The ending size of the graph.",
     )
     parser.add_argument(
         "-f",
         "--mutantFitness",
         type=float,
-        help=(
-            "The fitness of the mutants."
-        ),
+        required=True,
+        help="The fitness of the mutants.",
     )
     parser.add_argument(
         "-n",
         "--numSimulations",
         type=int,
-        help=(
-            "The number of simulations to run for each graph size."
-        ),
+        required=True,
+        help="The number of simulations to run for each graph size.",
     )
-    
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="simulation_results.csv",
+        help="CSV file to append results to (default: simulation_results.csv).",
+    )
+
     args = parser.parse_args()
-    simulate(args.sizeFrom, args.sizeTo, args.mutantFitness, args.numSimulations, args.graphType)
+    simulate(
+        args.sizeFrom,
+        args.sizeTo,
+        args.mutantFitness,
+        args.numSimulations,
+        args.graphType,
+        args.output,
+    )
