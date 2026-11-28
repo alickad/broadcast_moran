@@ -5,6 +5,21 @@ from pathlib import Path
 from moran import graph_generators as gen
 from moran import simulation as sim
 
+"""This script runs simulations for different graph types and sizes, and appends the results to a CSV file. 
+The results include fixation probability, absorption time, and conditional fixation time 
+for the Moran process on the specified graph type. It is mainly intended for large graphs, where
+the computation lasts a long time, and we want to save the results to a file. The results can be later analyzed and plotted using other tools.
+Usage:
+    python run_simulations.py -g <graph_type> -s <size_from> -t <size_to> -f <mutant_fitness> -n <num_simulations> -o <output_file>
+Arguments:
+    -g, --graphType: The type of graph to simulate. Choices are "path", "cycle", "path_with_n_leaves".
+    -s, --sizeFrom: The starting size of the graph.
+    -t, --sizeTo: The ending size of the graph.
+    -f, --mutantFitness: The fitness of the mutants.
+    -n, --numSimulations: The number of simulations to run for each graph size.
+    -o, --output: CSV file to append results to (default: simulation_results.csv).
+"""
+
 RESULT_HEADERS = [
     "graph type",
     "size",
@@ -19,13 +34,14 @@ RESULT_HEADERS = [
 
 
 def simulate(
-    sizeFrom,
-    sizeTo,
-    mutantFitness,
-    numSimulations,
-    graphType,
+    sizeFrom: int,
+    sizeTo: int,
+    mutantFitness: float,
+    numSimulations: int,
+    graphType: str,
     output_file="simulation_results.csv",
 ):
+    """Run simulations for a given graph type and size range. The results are appended to a CSV file."""
     for size in range(sizeFrom, sizeTo + 1):
         match graphType:
             case "path":
@@ -58,15 +74,15 @@ def simulate(
 
 
 def addToTable(
-    graphType,
-    size,
-    mutantFitness,
-    numSimulations,
-    fixationProbability,
-    absorptionTime,
-    fixationTime,
-    mutants,
-    totalVertices,
+    graphType: str,
+    size: int,
+    mutantFitness: float,
+    numSimulations: int,
+    fixationProbability: float,
+    absorptionTime: float,
+    fixationTime: float,
+    mutants: list,
+    totalVertices: int,
     output_file="simulation_results.csv",
 ):
     output_path = Path(output_file)

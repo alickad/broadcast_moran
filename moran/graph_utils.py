@@ -1,7 +1,15 @@
 import networkx as nx
 
-
-def normalize_vertex_numbers(edges, mutants):
+"""
+This module provides utility functions for creating and manipulating graphs for the Moran process.
+Functions:
+- normalize_vertex_numbers(edges, mutants): Normalize vertex numbers in edges and mutants.
+- initialize_graph(graph, initial_mutants): Initialize the graph with resident and mutant states.
+- create_graph(edges, initial_mutants, normalize=False): Create a graph from edges and mutants, with optional normalization.
+- load_graph(edge_file, mutant_file, normalize=False): Load a graph from edge and mutant files, with optional normalization.
+"""
+def normalize_vertex_numbers(edges: list, mutants: list) -> tuple[list, list]:
+    """Normalize vertex numbers in edges and mutants to be consecutive integers starting from 0."""
     unique_vertices = sorted(
         set(int(vertex) for edge in edges for vertex in edge.split())
     )
@@ -20,7 +28,8 @@ def normalize_vertex_numbers(edges, mutants):
     ], mutants
 
 
-def initialize_graph(graph, initial_mutants):
+def initialize_graph(graph: nx.Graph, initial_mutants: list) -> nx.Graph:
+    """Initialize the graph with resident and mutant states."""
     for node in graph.nodes():
         graph.nodes[node]["state"] = "resident"
     for mutant in initial_mutants:

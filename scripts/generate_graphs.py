@@ -1,3 +1,5 @@
+"""Just a little script to generate some graphs for testing the code. The graphs can be generated in the examples directory."""
+
 def generate_paths():
     for num_of_nodes in [3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50]:     # we will see which of these sizes we want
         with open('./examples/paths/edges' + str(num_of_nodes) + '.in', 'w') as f:
